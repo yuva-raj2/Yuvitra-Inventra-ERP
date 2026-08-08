@@ -1,4 +1,5 @@
 package com.yuvitra.inventory.constant;
 
-public class RoleType {
+public enum RoleType {
+  ADMIN,MANAGER,STAFF
 }

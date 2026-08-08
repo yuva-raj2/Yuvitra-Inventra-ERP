@@ -13,3 +13,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+jwt:
+  secret: InventraSecretKeyInventraSecretKeyInventraSecretKey123
+  expiration: 86400000
