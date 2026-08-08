@@ -1,0 +1,4 @@
+package com.yuvitra.inventory.entity;
+
+public class User {
+}
