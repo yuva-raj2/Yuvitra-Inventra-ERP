@@ -22,6 +22,10 @@ public class AuthController {
 
         return jwtService.extractEmail(token);
     }
+    @GetMapping("/profile")
+    public String profile() {
+        return "Authenticated User";
+    }
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @RequestBody RegisterRequest request) {
