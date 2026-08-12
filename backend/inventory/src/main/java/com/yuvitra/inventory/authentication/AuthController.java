@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.yuvitra.inventory.security.jwt.JwtService;
 import java.time.LocalDateTime;
-
+import org.springframework.security.core.Authentication;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -23,8 +23,10 @@ public class AuthController {
         return jwtService.extractEmail(token);
     }
     @GetMapping("/profile")
-    public String profile() {
-        return "Authenticated User";
+    public String profile(Authentication authentication) {
+
+        return "Welcome "
+                + authentication.getName();
     }
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(

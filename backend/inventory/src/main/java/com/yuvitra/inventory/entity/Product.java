@@ -41,5 +41,9 @@ public class Product {
 
     private LocalDateTime createdAt;
 
+    private String location;
+    private String unit;
+    private String supplierName;
     private LocalDateTime updatedAt;
+
 }
