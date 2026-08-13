@@ -6,7 +6,7 @@ import com.yuvitra.inventory.entity.Product;
 import com.yuvitra.inventory.exception.DuplicateResourceException;
 import com.yuvitra.inventory.exception.ResourceNotFoundException;
 import com.yuvitra.inventory.repository.ProductRepository;
-import com.yuvitra.inventory.service.ProductService;
+import com.yuvitra.inventory.service.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

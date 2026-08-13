@@ -6,7 +6,7 @@ import com.yuvitra.inventory.entity.enums.TransactionType;
 import com.yuvitra.inventory.exception.ResourceNotFoundException;
 import com.yuvitra.inventory.repository.InventoryTransactionRepository;
 import com.yuvitra.inventory.repository.ProductRepository;
-import com.yuvitra.inventory.service.InventoryTransactionService;
+import com.yuvitra.inventory.service.interfaces.InventoryTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.yuvitra.inventory.dto.response.InventoryTransactionResponse;

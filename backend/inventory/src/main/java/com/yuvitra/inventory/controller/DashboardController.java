@@ -1,7 +1,7 @@
 package com.yuvitra.inventory.controller;
 
 import com.yuvitra.inventory.dto.response.DashboardResponse;
-import com.yuvitra.inventory.service.DashboardService;
+import com.yuvitra.inventory.service.interfaces.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

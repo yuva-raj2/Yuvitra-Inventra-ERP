@@ -1,4 +1,4 @@
-package com.yuvitra.inventory.service;
+package com.yuvitra.inventory.service.interfaces;
 import com.yuvitra.inventory.dto.request.SupplierRequest;
 import com.yuvitra.inventory.dto.response.SupplierResponse;
 

@@ -5,13 +5,18 @@ import com.yuvitra.inventory.dto.request.SalesOrderRequest;
 import com.yuvitra.inventory.dto.request.StockTransactionRequest;
 import com.yuvitra.inventory.dto.response.SalesOrderItemResponse;
 import com.yuvitra.inventory.dto.response.SalesOrderResponse;
-import com.yuvitra.inventory.entity.*;
+import com.yuvitra.inventory.entity.Customer;
+import com.yuvitra.inventory.entity.Product;
+import com.yuvitra.inventory.entity.SalesOrder;
+import com.yuvitra.inventory.entity.SalesOrderItem;
 import com.yuvitra.inventory.entity.enums.SalesOrderStatus;
-import com.yuvitra.inventory.entity.enums.TransactionType;
 import com.yuvitra.inventory.exception.ResourceNotFoundException;
-import com.yuvitra.inventory.repository.*;
-import com.yuvitra.inventory.service.InventoryTransactionService;
-import com.yuvitra.inventory.service.SalesOrderService;
+import com.yuvitra.inventory.repository.CustomerRepository;
+import com.yuvitra.inventory.repository.ProductRepository;
+import com.yuvitra.inventory.repository.SalesOrderItemRepository;
+import com.yuvitra.inventory.repository.SalesOrderRepository;
+import com.yuvitra.inventory.service.interfaces.InventoryTransactionService;
+import com.yuvitra.inventory.service.interfaces.SalesOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SalesOrderServiceImpl
         implements SalesOrderService {
-    private final InventoryTransactionRepository
-            inventoryTransactionRepository;
+
     private final SalesOrderRepository
             salesOrderRepository;
 
@@ -41,6 +45,11 @@ public class SalesOrderServiceImpl
 
     private final InventoryTransactionService
             inventoryTransactionService;
+
+
+    // =========================================================
+    // CREATE SALES ORDER
+    // =========================================================
 
     @Override
     @Transactional
@@ -139,7 +148,9 @@ public class SalesOrderServiceImpl
                     totalAmount.add(itemTotal);
         }
 
-        savedOrder.setTotalAmount(totalAmount);
+        savedOrder.setTotalAmount(
+                totalAmount);
+
         savedOrder.setUpdatedAt(
                 LocalDateTime.now());
 
@@ -149,172 +160,59 @@ public class SalesOrderServiceImpl
 
         return mapToResponse(updated);
     }
+
+
+    // =========================================================
+    // UPDATE SALES ORDER STATUS
+    // =========================================================
+
     @Override
     @Transactional
     public SalesOrderResponse updateStatus(
             Long id,
-            SalesOrderStatus status) {
+            SalesOrderStatus newStatus) {
 
-        SalesOrder order =
+        SalesOrder salesOrder =
                 salesOrderRepository.findById(id)
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
-                                        "Sales Order Not Found"));
+                                        "Sales order not found with id: "
+                                                + id));
 
         /*
-         * Prevent duplicate confirmation
+         * Prevent duplicate confirmation.
          */
-        if(order.getStatus() ==
+        if (newStatus ==
                 SalesOrderStatus.CONFIRMED
                 &&
-                status ==
-                        SalesOrderStatus.CONFIRMED){
-
-            throw new RuntimeException(
-                    "Order Already Confirmed");
-        }
-
-        /*
-         * Stock deduction
-         */
-        if(status ==
-                SalesOrderStatus.CONFIRMED){
-
-            deductStock(order);
-        }
-
-        order.setStatus(status);
-
-        SalesOrder updated =
-                salesOrderRepository.save(order);
-
-        return mapToResponse(updated);
-    }
-
-    private void deductStock(
-            SalesOrder order){
-
-        List<SalesOrderItem> items =
-                salesOrderItemRepository
-                        .findBySalesOrderId(
-                                order.getId());
-
-        for(SalesOrderItem item : items){
-
-            Product product =
-                    item.getProduct();
-
-            /*
-             * Validation
-             */
-            if(product.getQuantity()
-                    <
-                    item.getQuantity()){
-
-                throw new RuntimeException(
-                        "Insufficient stock for "
-                                +
-                                product.getProductName());
-            }
-
-            Integer oldQty =
-                    product.getQuantity();
-
-            Integer newQty =
-                    oldQty -
-                            item.getQuantity();
-
-            product.setQuantity(newQty);
-
-            productRepository.save(product);
-
-            /*
-             * Inventory Transaction
-             */
-            InventoryTransaction transaction =
-                    InventoryTransaction.builder()
-                            .product(product)
-                            .transactionType(
-                                    TransactionType.OUT)
-                            .quantity(
-                                    item.getQuantity())
-                            .remarks(
-                                    "Sales Order : "
-                                            +
-                                            order.getOrderNumber())
-                            .createdAt(
-                                    LocalDateTime.now())
-                            .build();
-
-            inventoryTransactionRepository
-                    .save(transaction);
-        }
-    }
-
-    @Override
-    public List<SalesOrderResponse>
-    getAllSalesOrders() {
-
-        return salesOrderRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-
-    @Override
-    public SalesOrderResponse
-    getSalesOrderById(Long id) {
-
-        SalesOrder salesOrder =
-                salesOrderRepository.findById(id)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Sales order not found with id: "
-                                                + id));
-
-        return mapToResponse(salesOrder);
-    }
-
-    @Override
-    @Transactional
-    public SalesOrderResponse updateStatus(
-            Long id,
-            String status) {
-
-        SalesOrder salesOrder =
-                salesOrderRepository.findById(id)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Sales order not found with id: "
-                                                + id));
-
-        SalesOrderStatus newStatus;
-
-        try {
-
-            newStatus =
-                    SalesOrderStatus.valueOf(
-                            status.toUpperCase());
-
-        } catch (IllegalArgumentException exception) {
+                salesOrder.getStatus() ==
+                        SalesOrderStatus.CONFIRMED) {
 
             throw new IllegalArgumentException(
-                    "Invalid sales order status: "
-                            + status);
+                    "Order is already confirmed");
         }
 
+
         /*
-         * Stock is reduced only when the order
-         * is confirmed for the first time.
+         * Stock validation and Stock Out
+         *
+         * Stock is reduced only when
+         * the order becomes CONFIRMED.
          */
-        if (newStatus == SalesOrderStatus.CONFIRMED &&
-                salesOrder.getStatus()
-                        != SalesOrderStatus.CONFIRMED) {
+        if (newStatus ==
+                SalesOrderStatus.CONFIRMED
+                &&
+                salesOrder.getStatus() !=
+                        SalesOrderStatus.CONFIRMED) {
 
             List<SalesOrderItem> items =
                     salesOrderItemRepository
                             .findBySalesOrderId(id);
+
+
+            // -------------------------------------------------
+            // STEP 1: Validate ALL stock first
+            // -------------------------------------------------
 
             for (SalesOrderItem item : items) {
 
@@ -339,10 +237,11 @@ public class SalesOrderServiceImpl
                 }
             }
 
-            /*
-             * All products have enough stock.
-             * Now perform Stock Out.
-             */
+
+            // -------------------------------------------------
+            // STEP 2: Perform Stock Out
+            // -------------------------------------------------
+
             for (SalesOrderItem item : items) {
 
                 StockTransactionRequest
@@ -365,7 +264,14 @@ public class SalesOrderServiceImpl
             }
         }
 
-        salesOrder.setStatus(newStatus);
+
+        // -----------------------------------------------------
+        // Update Sales Order Status
+        // -----------------------------------------------------
+
+        salesOrder.setStatus(
+                newStatus);
+
         salesOrder.setUpdatedAt(
                 LocalDateTime.now());
 
@@ -375,6 +281,47 @@ public class SalesOrderServiceImpl
 
         return mapToResponse(updated);
     }
+
+
+    // =========================================================
+    // GET ALL SALES ORDERS
+    // =========================================================
+
+    @Override
+    public List<SalesOrderResponse>
+    getAllSalesOrders() {
+
+        return salesOrderRepository
+                .findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
+    // =========================================================
+    // GET SALES ORDER BY ID
+    // =========================================================
+
+    @Override
+    public SalesOrderResponse
+    getSalesOrderById(Long id) {
+
+        SalesOrder salesOrder =
+                salesOrderRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Sales order not found with id: "
+                                                + id));
+
+        return mapToResponse(
+                salesOrder);
+    }
+
+
+    // =========================================================
+    // MAP ENTITY TO RESPONSE
+    // =========================================================
 
     private SalesOrderResponse mapToResponse(
             SalesOrder salesOrder) {
@@ -387,7 +334,8 @@ public class SalesOrderServiceImpl
                         .map(item ->
                                 SalesOrderItemResponse
                                         .builder()
-                                        .id(item.getId())
+                                        .id(
+                                                item.getId())
                                         .productId(
                                                 item.getProduct()
                                                         .getId())
@@ -404,7 +352,8 @@ public class SalesOrderServiceImpl
                         .toList();
 
         return SalesOrderResponse.builder()
-                .id(salesOrder.getId())
+                .id(
+                        salesOrder.getId())
                 .orderNumber(
                         salesOrder.getOrderNumber())
                 .customerId(
@@ -424,6 +373,11 @@ public class SalesOrderServiceImpl
                 .build();
     }
 
+
+    // =========================================================
+    // GENERATE ORDER NUMBER
+    // =========================================================
+
     private String generateOrderNumber() {
 
         String date =
@@ -434,8 +388,12 @@ public class SalesOrderServiceImpl
                                                 "yyyyMMdd"));
 
         long count =
-                salesOrderRepository.count() + 1;
+                salesOrderRepository.count()
+                        + 1;
 
-        return "SO-" + date + "-" + count;
+        return "SO-"
+                + date
+                + "-"
+                + count;
     }
 }

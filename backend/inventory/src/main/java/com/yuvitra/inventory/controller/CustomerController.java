@@ -2,7 +2,7 @@ package com.yuvitra.inventory.controller;
 
 import com.yuvitra.inventory.dto.request.CustomerRequest;
 import com.yuvitra.inventory.dto.response.CustomerResponse;
-import com.yuvitra.inventory.service.CustomerService;
+import com.yuvitra.inventory.service.interfaces.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

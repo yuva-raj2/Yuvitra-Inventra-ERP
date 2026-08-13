@@ -3,7 +3,7 @@ package com.yuvitra.inventory.service.impl;
 import com.yuvitra.inventory.dto.response.DashboardResponse;
 import com.yuvitra.inventory.entity.Product;
 import com.yuvitra.inventory.repository.ProductRepository;
-import com.yuvitra.inventory.service.DashboardService;
+import com.yuvitra.inventory.service.interfaces.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

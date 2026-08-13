@@ -3,7 +3,7 @@ package com.yuvitra.inventory.controller;
 import com.yuvitra.inventory.dto.request.SalesOrderRequest;
 import com.yuvitra.inventory.dto.response.SalesOrderResponse;
 import com.yuvitra.inventory.entity.enums.SalesOrderStatus;
-import com.yuvitra.inventory.service.SalesOrderService;
+import com.yuvitra.inventory.service.interfaces.SalesOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +25,7 @@ public class SalesOrderController {
     }
 
     @GetMapping
-    public List<SalesOrderResponse>
-    getAllSalesOrders() {
+    public List<SalesOrderResponse> getAllSalesOrders() {
 
         return salesOrderService
                 .getAllSalesOrders();
@@ -43,7 +42,7 @@ public class SalesOrderController {
     @PatchMapping("/{id}/status")
     public SalesOrderResponse updateStatus(
             @PathVariable Long id,
-            @RequestParam SalesOrderStatus status){
+            @RequestParam SalesOrderStatus status) {
 
         return salesOrderService
                 .updateStatus(id, status);

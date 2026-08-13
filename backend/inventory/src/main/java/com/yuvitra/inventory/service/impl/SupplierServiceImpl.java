@@ -5,7 +5,7 @@ import com.yuvitra.inventory.dto.response.SupplierResponse;
 import com.yuvitra.inventory.entity.Supplier;
 import com.yuvitra.inventory.exception.ResourceNotFoundException;
 import com.yuvitra.inventory.repository.SupplierRepository;
-import com.yuvitra.inventory.service.SupplierService;
+import com.yuvitra.inventory.service.interfaces.SupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
