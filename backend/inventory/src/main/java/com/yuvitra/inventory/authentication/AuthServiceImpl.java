@@ -73,9 +73,6 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new UnauthorizedException("Invalid Email or Password"));
-        String token = jwtService.generateToken(
-                user.getEmail()
-        );
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
@@ -83,7 +80,9 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException(
                     "Invalid Email or Password");
         }
-
+        String token = jwtService.generateToken(
+                user.getEmail()
+        );
         return AuthResponse.builder()
                 .userId(user.getId())
                 .email(user.getEmail())

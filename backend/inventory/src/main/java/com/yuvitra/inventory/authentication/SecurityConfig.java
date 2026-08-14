@@ -42,17 +42,43 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth ->
                         auth
+
                                 .requestMatchers(
                                         "/api/auth/register",
                                         "/api/auth/login"
                                 ).permitAll()
 
+                                .requestMatchers(
+                                        "/api/reports/**"
+                                ).hasAnyRole("ADMIN", "MANAGER")
+
+                                .requestMatchers(
+                                        "/api/products/**"
+                                ).hasAnyRole("ADMIN", "STAFF")
+
+                                .requestMatchers(
+                                        "/api/suppliers/**"
+                                ).hasRole("ADMIN")
+
+                                .requestMatchers(
+                                        "/api/customers/**"
+                                ).hasAnyRole("ADMIN", "STAFF")
+
+                                .requestMatchers(
+                                        "/api/purchase-orders/**"
+                                ).hasAnyRole("ADMIN", "MANAGER")
+
+                                .requestMatchers(
+                                        "/api/sales-orders/**"
+                                ).hasAnyRole("ADMIN", "STAFF")
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
                                 .anyRequest()
                                 .authenticated())
-
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);

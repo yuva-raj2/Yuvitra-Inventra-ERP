@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "purchase_orders")
@@ -39,4 +40,10 @@ public class PurchaseOrder {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+    @OneToMany(
+            mappedBy = "purchaseOrder",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private List<PurchaseOrderItem> items;
 }
